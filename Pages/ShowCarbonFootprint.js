@@ -1,21 +1,29 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-export default function ShowCarbonFootprint() {
-  // Mock Data for Carbon Footprint
-  const carbonFootprint = {
-    source: "Car Travel",
-    footprint: 120, // in kg CO2e
-    date: "2023-11-18",
-  };
+export default function ShowCarbonFootprint({ data }) {
+  if (!data || data.length === 0) {
+    // Handle case when data is empty or undefined
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Carbon Credit</Text>
+        <Text style={styles.noDataText}>No data available.</Text>
+      </View>
+    );
+  }
+
+  // Find the object with the highest ID in the data array
+  const highestIdObject = data.reduce((prev, current) => {
+    return prev.id > current.id ? prev : current;
+  });
+
+  console.log("Highest ID Object in Carbon Credit: ", highestIdObject);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Carbon Footprint</Text>
+      <Text style={styles.title}>Carbon Credit</Text>
       <View style={styles.itemContainer}>
-        <Text style={styles.sourceText}>{carbonFootprint.source}</Text>
-        <Text style={styles.footprintText}>{carbonFootprint.footprint} kg CO₂e</Text>
-        <Text style={styles.dateText}>Date: {carbonFootprint.date}</Text>
+        <Text style={styles.sourceText}>{highestIdObject.emission || "N/A"} Tons</Text>
       </View>
     </View>
   );
@@ -50,14 +58,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 5,
+    textAlign: "center",
   },
-  footprintText: {
+  noDataText: {
     fontSize: 16,
-    color: "red",
-    marginBottom: 5,
-  },
-  dateText: {
-    fontSize: 14,
-    color: "#555",
+    color: "#888",
+    textAlign: "center",
   },
 });

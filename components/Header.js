@@ -17,7 +17,7 @@ export default function Header() {
         <View style={{ width: '100%', height: 30, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', margin: 10 }}>
 
             {/* Home Button */}
-            <TouchableOpacity
+            {/* <TouchableOpacity
                 style={{ marginRight: 20 }}
                 onPress={handleHomePress}
             >
@@ -26,7 +26,7 @@ export default function Header() {
                     style={{ width: 30, height: 30 }}
                     resizeMode="cover"
                 />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* Back Button */}
             <TouchableOpacity

@@ -1,29 +1,36 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
 import Header from "../components/Header";
 
-export default function PipeInfoData({ route }) {
-  // Retrieve the pipe data passed from the navigation
-  const { pipe } = route.params;
+export default function PipeListScreen({ navigation }) {
+  // Mock data for pipes
+  const pipes = [
+    { id: "1", name: "Pipe A", location: "Field 1" },
+    { id: "2", name: "Pipe B", location: "Field 2" },
+    { id: "3", name: "Pipe C", location: "Field 3" },
+  ];
+
+  // Render a single pipe item
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.pipeItem}
+      onPress={() => navigation.navigate("PipeInfoData", { pipe: item })}
+    >
+      <Text style={styles.pipeName}>{item.name}</Text>
+      <Text style={styles.pipeLocation}>Location: {item.location}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
-        <Header />
-      <Text style={styles.title}>Pipe Information</Text>
-      <View style={styles.infoCard}>
-        <Text style={styles.infoText}>
-          <Text style={styles.label}>Name: </Text>
-          {pipe.name}
-        </Text>
-        <Text style={styles.infoText}>
-          <Text style={styles.label}>Location: </Text>
-          {pipe.location}
-        </Text>
-        <Text style={styles.infoText}>
-          <Text style={styles.label}>ID: </Text>
-          {pipe.id}
-        </Text>
-      </View>
+      <Header />
+      <Text style={styles.title}>List of Pipes</Text>
+      <FlatList
+        data={pipes}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.list}
+      />
     </View>
   );
 }
@@ -40,22 +47,26 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
-  infoCard: {
+  list: {
+    paddingBottom: 20,
+  },
+  pipeItem: {
     backgroundColor: "#fff",
-    padding: 20,
+    padding: 15,
+    marginVertical: 8,
     borderRadius: 8,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
   },
-  infoText: {
-    fontSize: 16,
-    color: "#333",
-    marginBottom: 10,
-  },
-  label: {
+  pipeName: {
+    fontSize: 18,
     fontWeight: "bold",
+    color: "#333",
+  },
+  pipeLocation: {
+    fontSize: 14,
     color: "#555",
   },
 });

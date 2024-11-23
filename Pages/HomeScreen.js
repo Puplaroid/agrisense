@@ -9,56 +9,85 @@ import HumidityGraph from "./HumidityGraph";
 import TotalWaterGraph from "./TotalWaterGraph";
 import ShowCarbonFootprint from "./ShowCarbonFootprint";
 
-export default function HomeScreen({ navigation }) {
+import { useNavigation } from "@react-navigation/native";
+
+export default function HomeScreen({ route }) {
+  const navigation = useNavigation();
   const [isMobile, setIsMobile] = useState(Dimensions.get("window").width < 768);
+  
+
+  const farmerId  = route.params; // Extract farmerId from the route params
+  console.log("Farmer ID in Homescreen:", farmerId);
+
 
   // Refresh the value of `isMobile` every second
   useEffect(() => {
     const interval = setInterval(() => {
       const { width } = Dimensions.get("window");
       setIsMobile(width < 768);
-      console.log("isMobile refreshed:", width < 768);
+      //   console.log("isMobile refreshed:", width < 768);
     }, 1000); // Refresh every 1 second
 
     return () => clearInterval(interval); // Cleanup the interval on unmount
   }, []);
 
   const goToRiceFieldInfo = () => {
-    navigation.navigate("RiceFieldInfo");
+    navigation.navigate("RiceFieldInfo", { farmerId });
   };
+  
   const goToPipeListScreen = () => {
-    navigation.navigate("PipeListScreen");
+    navigation.navigate("PipeListScreen", { farmerId });
   };
+  
   const goToPumpListScreen = () => {
-    navigation.navigate("PumpListScreen");
+    navigation.navigate("PumpListScreen", { farmerId });
   };
+  
+  const goToFieldListScreen = () => {
+    navigation.navigate("FieldListScreen", { farmerId });
+  };
+  
 
   const [hoveredButton, setHoveredButton] = useState(null);
-
   const handleMouseEnter = (button) => {
     setHoveredButton(button);
   };
-
   const handleMouseLeave = () => {
     setHoveredButton(null);
   };
+
+  const handleLogout = () => {
+    // Logic for logout
+    console.log("Logout button pressed");
+    navigation.navigate("Login"); // Redirect to Login Screen
+  };
+
+  
 
 
   return (
     <ScrollView contentContainerStyle={styles.M_main}>
       {/* Main Content */}
       <View style={[styles.M_container_DB, isMobile && styles.M_container_DB_Mobile]}>
-        <View style={styles.M_container_DB_Header} />
+        <View style={styles.M_container_DB_Header}>
+          <View style={styles.headerText_container}> 
+            <Text style={styles.headerText}>Rice Field: Golden Valley</Text>
+          </View>
+          {/* Logout Button */}
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Upper Section */}
         <View style={[styles.M_containerUp_DB, isMobile && styles.M_containerUp_DB_Mobile]}>
-          <WaterLevel style={styles.M_containerUp_DB_1} />
-          <MethaneGraph style={styles.M_containerUp_DB_2} />
+          <WaterLevel data={emissionData}/>
+          <MethaneGraph data={emissionData}/>
         </View>
 
         {/* Middle Section */}
         <View style={[styles.M_containerMid1_DB, isMobile && styles.M_containerMid1_DB_Mobile]}>
-          <ShowCarbonFootprint style={styles.M_containerMid1_DB_section} />
+          <ShowCarbonFootprint style={styles.M_containerMid1_DB_section} data={emissionData}/>
           <TouchableOpacity
             onPress={goToRiceFieldInfo}
             style={[
@@ -74,13 +103,26 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={goToFieldListScreen}
+            style={[
+              styles.M_containerMid1_DB_section,
+              isMobile && styles.button_Mobile,
+              styles.button,
+              hoveredButton === "FieldListScreen" && styles.buttonHover,
+            ]}
+            onMouseEnter={() => handleMouseEnter("FieldListScreen")}
+            onMouseLeave={handleMouseLeave}
+          >
+            <Text style={styles.buttonText}>Go to Field List Screen</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             onPress={goToPipeListScreen}
             style={[
               styles.M_containerMid1_DB_section,
               isMobile && styles.button_Mobile,
               styles.button,
               hoveredButton === "PipeListScreen" && styles.buttonHover,
-              {marginVertical: 5,}
             ]}
             onMouseEnter={() => handleMouseEnter("PipeListScreen")}
             onMouseLeave={handleMouseLeave}
@@ -104,15 +146,16 @@ export default function HomeScreen({ navigation }) {
         </View>
 
         <View style={[styles.M_containerMid2_DB, isMobile && styles.M_containerMid2_DB_Mobile]}>
-          <TempGraph style={styles.M_containerMid2_DB_1} />
-          <LightGraph style={styles.M_containerMid2_DB_2} />
+          <TempGraph data={emissionData}/>
+          <LightGraph data={emissionData}/>
         </View>
 
         {/* Lower Section */}
         <View style={[styles.M_containerDown_DB, isMobile && styles.M_containerDown_DB_Mobile]}>
-          <HumidityGraph style={styles.M_containerDown_DB_1} />
-          <TotalWaterGraph style={styles.M_containerDown_DB_2} />
+          <HumidityGraph data={emissionData}/>
+          <TotalWaterGraph data={emissionData}/>
         </View>
+
       </View>
     </ScrollView>
   );
@@ -129,14 +172,25 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     flexDirection: "column",
     width: "100%",
-    maxHeight: SCREEN_HEIGHT * 0.9,
+    maxHeight: SCREEN_HEIGHT * 0.93,
     flex: 1,
   },
   M_container_DB_Header: {
-    backgroundColor: "yellow",
-    height: SCREEN_HEIGHT * 0.1,
+    // height: SCREEN_HEIGHT * 0.05,
     margin: 10,
     borderRadius: 10,
+    justifyContent: "space-between",
+    flexDirection: "row",
+  },
+  headerText_container: {
+    flex: 1,
+  },
+  headerText: {
+    color: "#000",
+    fontSize: 36,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginTop: 10,
   },
   M_containerUp_DB: {
     borderRadius: 10,
@@ -154,7 +208,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     height: SCREEN_HEIGHT * 0.2,
     padding: 10,
-    marginBottom: 20,
 
   },
   M_containerMid1_DB_section: {
@@ -162,9 +215,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     flexDirection: "row",
     justifyContent: "space-between",
-    height: SCREEN_HEIGHT * 0.2,
+    // height: SCREEN_HEIGHT * 0.15,
     // padding: 10,
-    width: "24%",
+    width: "19%",
   },
   M_containerMid2_DB: {
     borderRadius: 10,
@@ -185,12 +238,14 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "#007bff",
     marginHorizontal: 5,
-    textAlign: "center",
+    alignItems: "center", // Horizontal centering
+    justifyContent: "center", // Vertical centering
   },
   button_Mobile: {
     width: "90%",
     height: 70,
     alignSelf: "center",
+    marginVertical: 5,
   },
   buttonHover: {
     backgroundColor: "#0056b3", // Darker blue for hover effect
@@ -198,11 +253,16 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 24,
     fontWeight: "bold",
+    alignContent: "center",
   },
 
   // Styles specific to Mobile
+  M_container_DB_Mobile: {
+    flexDirection: "column",
+    height: "auto",
+  },
   M_containerUp_DB_Mobile: {
     flexDirection: "column",
     height: "auto",
@@ -218,6 +278,23 @@ const styles = StyleSheet.create({
   M_containerDown_DB_Mobile: {
     flexDirection: "column",
     height: "auto",
+    marginBottom: 20,
+  },
+  logoutButton: {
+    backgroundColor: "#ff4d4d",
+    padding: 15,
+    borderRadius: 8,
+    margin: 10,
+    marginBottom: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    right: 0,
+  },
+  logoutButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

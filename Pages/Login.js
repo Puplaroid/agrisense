@@ -1,12 +1,16 @@
 import React, { useState, useRef } from "react";
 import {
-  View, Text, TextInput, TouchableOpacity, ActivityIndicator,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import { PageStyle } from "../Style/PageStyle";
 
-export default function Login({ setAuthAdmin }) {
+export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -14,9 +18,9 @@ export default function Login({ setAuthAdmin }) {
   const navigation = useNavigation();
   const passwordInputRef = useRef(null);
 
-  const handleSubmit = async () => {
-    setErrorMessage("");
 
+  const handleLogin = async () => {
+    setErrorMessage("");
     if (username === "" || password === "") {
       setErrorMessage("Please enter both username and password.");
       return;
@@ -25,10 +29,17 @@ export default function Login({ setAuthAdmin }) {
     setLoading(true);
 
     try {
-      const response = await fetch("https://ku-man-api.vimforlanie.com/admin/login", {
+
+      let bodyContent = JSON.stringify({
+        "username": username,
+        "password": password
+      });
+
+      // Replace with your actual login API endpoint
+      const response = await fetch("http://3.27.146.110/farmer/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: bodyContent,
       });
 
       if (!response.ok) {
@@ -38,15 +49,12 @@ export default function Login({ setAuthAdmin }) {
       }
 
       const data = await response.json();
-      const authAdmin = data.token;
+      const farmerID = data[0].id;
+      console.log("farmerID: ",farmerID);
 
-      await AsyncStorage.setItem("authAdmin", authAdmin);
-      setAuthAdmin(authAdmin);
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Dashboard" }],
-      });
+      // Navigate to the HomeScreen
+      // navigation.navigate("HomeScreen", farmerID);
+      navigation.navigate("RiceFieldInfo", farmerID);
 
     } catch (error) {
       console.error("Login error:", error);
@@ -57,12 +65,11 @@ export default function Login({ setAuthAdmin }) {
   };
 
   return (
-    <View style={PageStyle.loginBg}>
-      <Text style={PageStyle.loginHeaderText}>KU-Man Admin</Text>
-      <View style={PageStyle.loginContainer}>
-        <Text style={PageStyle.loginHeader}>Login</Text>
+    <View style={styles.container}>
+      <Text style={styles.headerText}>AgriSense Login</Text>
+      <View style={styles.form}>
         <TextInput
-          style={PageStyle.loginInput}
+          style={styles.input}
           placeholder="Username"
           value={username}
           onChangeText={setUsername}
@@ -71,28 +78,86 @@ export default function Login({ setAuthAdmin }) {
           onSubmitEditing={() => passwordInputRef.current.focus()}
         />
         <TextInput
-          style={PageStyle.loginInput}
+          style={styles.input}
           placeholder="Password"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
           returnKeyType="done"
-          onSubmitEditing={handleSubmit}
+          onSubmitEditing={handleLogin}
           ref={passwordInputRef}
         />
 
         {errorMessage !== "" && (
-          <Text style={PageStyle.loginErrorText}>{errorMessage}</Text>
+          <Text style={styles.errorText}>{errorMessage}</Text>
         )}
 
         {loading ? (
-          <ActivityIndicator size="large" color="#0000ff" />
+          <ActivityIndicator size="large" color="#007bff" />
         ) : (
-          <TouchableOpacity style={PageStyle.loginButton} onPress={handleSubmit}>
-            <Text style={PageStyle.loginButtonText}>Login</Text>
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
+            <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
         )}
+
+        <TouchableOpacity
+          style={styles.linkButton}
+          onPress={() => navigation.navigate("Register")}
+        >
+          <Text style={styles.linkText}>Don't have an account? Register</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f9f9f9",
+    padding: 20,
+    justifyContent: "center",
+
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  form: {
+    marginVertical: 10,
+  },
+  input: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  button: {
+    backgroundColor: "#007bff",
+    padding: 15,
+    borderRadius: 5,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  linkButton: {
+    marginTop: 10,
+    alignItems: "center",
+  },
+  linkText: {
+    color: "#007bff",
+    textDecorationLine: "underline",
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+});
