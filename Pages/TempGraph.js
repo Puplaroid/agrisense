@@ -2,109 +2,83 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 
-export default function HourlyTemperatureGraph() {
+export default function HourlyTempGraph({ data }) {
   const screenWidth = Dimensions.get("window").width;
   const [isMobile, setIsMobile] = useState(Dimensions.get("window").width < 768);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const { width } = Dimensions.get("window");
-      setIsMobile(width < 768);
-      console.log("isMobile refreshed:", width < 768);
-    }, 1000); // Refresh every 1 second
+    const handleResize = () => {
+      setIsMobile(Dimensions.get("window").width < 768);
+    };
+    Dimensions.addEventListener("change", handleResize);
 
-    return () => clearInterval(interval); // Cleanup the interval on unmount
+    return () => Dimensions.removeEventListener("change", handleResize);
   }, []);
 
-  // Function to generate random temperature values
-  const getRandomTemperature = (min, max) => {
-    return parseFloat((Math.random() * (max - min) + min).toFixed(2));
+  // Define fixed x-axis labels for 24 hours
+  const fixedLabels = [
+    "12 AM","3 AM", "6 AM", "9 AM",
+    "12 PM","3 PM", "6 PM", "9 PM","12 AM",
+  ];
+
+  // Prepare data for the fixed x-axis
+  const prepareTemperatureData = () => {
+    const temperatureData = new Array(24).fill(null); // Initialize with null for all 24 hours
+    const today = new Date().toISOString().split("T")[0]; // Today's date
+
+    data.forEach((item) => {
+      if (item.date.startsWith(today)) {
+        const itemHour = new Date(item.date).getHours(); // Get the hour of the data point
+        temperatureData[itemHour] = item.temperature; // Assign the temperature to the correct hour
+      }
+    });
+
+    // Replace any null values with 0 or leave them as null for no plot
+    return temperatureData.map((value) => (value === null ? 0 : value));
   };
 
-  // Generate x-axis labels for every 3 hours
-  const generateXLabels = () => {
-    const labels = [];
-    const startTime = new Date();
-    startTime.setHours(6, 0, 0, 0); // Start at 6:00 AM
-    for (let i = 0; i <= 24; i += 3) {
-      const currentHour = new Date(startTime.getTime() + i * 60 * 60 * 1000); // Increment by 3 hours
-      const hours = currentHour.getHours();
-      const ampm = hours >= 12 ? "PM" : "AM";
-      const label = `${hours % 12 || 12} ${ampm}`; // Format as "6 AM", "9 AM", etc.
-      labels.push(label);
-    }
-    return labels;
-  };
+  const temperatureData = prepareTemperatureData();
 
-  const xLabels = generateXLabels();
-
-  // State for dynamic temperature data
-  const [temperatureData, setTemperatureData] = useState([]);
-  const [currentSecond, setCurrentSecond] = useState(0);
-
-  useEffect(() => {
-    // Update temperature data every second
-    const interval = setInterval(() => {
-      setTemperatureData((prevData) => [
-        ...prevData,
-        getRandomTemperature(22, 40), // Add a new random temperature value (range -10°C to 40°C)
-      ]);
-      setCurrentSecond((prevSecond) => prevSecond + 1);
-    }, 1000);
-
-    return () => clearInterval(interval); // Cleanup interval on unmount
-  }, []);
-
-  // Group temperature data into 3-hour averages for graph display
-  const groupedData = [];
-  for (let i = 0; i < xLabels.length; i++) {
-    const hourlyData = temperatureData.slice(i * 3600, (i + 1) * 3600); // Data for the current hour
-    if (hourlyData.length > 0) {
-      const average =
-        hourlyData.reduce((a, b) => a + b, 0) / hourlyData.length; // Average temperature per hour
-      groupedData.push(average);
-    } else {
-      groupedData.push(0); // Replace `null` with `0`
-    }
-  }
-
-  // Data structure for the chart
   const chartData = {
-    labels: xLabels, // 3-hour intervals
+    labels: fixedLabels,
     datasets: [
       {
-        data: groupedData, // Grouped temperature data
-        color: (opacity = 1) => `rgba(255, 99, 132, ${opacity})`, // Line color (red for temperature)
+        data: temperatureData,
+        color: (opacity = 1) => `rgba(75, 192, 192, ${opacity})`, // Line color
         strokeWidth: 2, // Line thickness
       },
     ],
-    legend: ["Temperature (°C)"], // Legend for the graph
+    legend: ["Temperature (°C)"], // Legend
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Temperature Over the Day</Text>
-      <LineChart
-        data={chartData}
-        width={isMobile ? screenWidth * 0.9 : screenWidth * 0.45}
-        height={250}
-        chartConfig={{
-          backgroundGradientFrom: "#f0f0f0",
-          backgroundGradientTo: "#f0f0f0",
-          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Line color
-          labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Label color
-          style: {
-            borderRadius: 16,
-          },
-          propsForDots: {
-            r: "4",
-            strokeWidth: "2",
-            stroke: "#ff4d4d", // Red for temperature
-          },
-        }}
-        bezier
-        style={styles.chart}
-      />
+      <Text style={styles.title}>Temperature Over Time</Text>
+      {temperatureData.length > 0 ? (
+        <LineChart
+          data={chartData}
+          width={isMobile ? screenWidth * 0.9 : screenWidth * 0.45}
+          height={250}
+          chartConfig={{
+            backgroundGradientFrom: "#f0f0f0",
+            backgroundGradientTo: "#f0f0f0",
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            style: {
+              borderRadius: 16,
+            },
+            propsForDots: {
+              r: "4",
+              strokeWidth: "2",
+              stroke: "#3b82f6",
+            },
+          }}
+          bezier
+          style={styles.chart}
+        />
+      ) : (
+        <Text style={styles.noDataText}>No temperature data available for today.</Text>
+      )}
     </View>
   );
 }
@@ -116,13 +90,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f9f9f9",
     padding: 20,
+    borderRadius: 10,
   },
   title: {
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 20,
+    textAlign: "center",
   },
   chart: {
     borderRadius: 16,
+  },
+  noDataText: {
+    fontSize: 16,
+    color: "#888",
+    textAlign: "center",
   },
 });
