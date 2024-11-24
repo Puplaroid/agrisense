@@ -354,7 +354,7 @@ export default function FarmerDataScreen({ route }) {
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={styles.cancelButton}
-                                    onPress={() => setIsModalVisible(false)}
+                                    onPress={() => setIsAddAddressModalVisible(false)}
                                 >
                                     <Text style={styles.buttonText}>Cancel</Text>
                                 </TouchableOpacity>
@@ -377,7 +377,7 @@ export default function FarmerDataScreen({ route }) {
                             >
                                 <Text style={styles.farmTitle}>Farm {index + 1}</Text>
                                 <Text>Description: {farm.description}</Text>
-                                <Text>Area: {farm.area} acres</Text>
+                                <Text>Area: {farm.area} Rai</Text>
                                 <Text>Total Rice Harvest: {farm.totalRiceHarvest} tons</Text>
                                 <Text>
                                     Created At:{" "}

@@ -177,7 +177,7 @@ export default function WaterGateControlDetail({ route }) {
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
-        justifyContent: "center",
+        // justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#f9f9f9",
         padding: 20,

@@ -157,6 +157,15 @@ export default function FieldDetail({ route }) {
             Alert.alert("Error", "Something went wrong while fetching emission data.");
         }
     };
+    // Fetch data initially and refresh every 5 seconds
+    useEffect(() => {
+        fetchEmissionData(); // Initial fetch
+        const interval = setInterval(() => {
+            fetchEmissionData();
+        }, 5000); // Refresh every 5 seconds
+
+        return () => clearInterval(interval); // Cleanup interval on unmount
+    }, []);
 
 
 
@@ -268,6 +277,11 @@ export default function FieldDetail({ route }) {
                     </Text>
                     <Text style={styles.fieldText}>Latitude: {fieldDetail[0]?.latitude || "N/A"}</Text>
                     <Text style={styles.fieldText}>Longitude: {fieldDetail[0]?.longitude || "N/A"}</Text>
+                </View>
+
+                {/* Emission Data Section */}
+                <View style={styles.GraphSection}>
+                    <WaterLevel data={emissionData} />
                 </View>
 
                 {/* Rice Field Data Section */}
@@ -485,10 +499,6 @@ export default function FieldDetail({ route }) {
                 </Modal>
 
 
-                {/* Emission Data Section */}
-                <View style={styles.GraphSection}>
-                    <WaterLevel data={emissionData} />
-                </View>
 
 
 

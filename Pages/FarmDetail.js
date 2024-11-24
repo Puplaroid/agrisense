@@ -11,6 +11,8 @@ import {
     Dimensions,
     Picker,
 } from "react-native";
+// import RNFS from "react-native-fs";
+// import { Parser } from "json2csv";
 
 import Header from "../components/Header";
 import AvgWaterLevel from "./AvgWaterLevel";
@@ -377,6 +379,22 @@ export default function FarmDetail({ route }) {
         }
     };
 
+    // const exportToCSV = async () => {
+    //     try {
+    //       const parser = new Parser();
+    //       const csv = parser.parse(emissionData);
+    
+    //       const path = `${RNFS.DocumentDirectoryPath}/emissionData_data.csv`;
+    
+    //       await RNFS.writeFile(path, csv, "utf8");
+    //       Alert.alert("Success", `Data exported to ${path}`);
+    //     } catch (error) {
+    //       console.error("Error exporting data to CSV:", error);
+    //       Alert.alert("Error", "Failed to export data to CSV.");
+    //     }
+    //   };
+    
+
 
     const handleAddField = () => {
         setIsAddFieldModalVisible(true);
@@ -422,7 +440,7 @@ export default function FarmDetail({ route }) {
                 <View style={styles.card}>
                     <Text style={styles.title}>Farm ID: {farmDetail[0]?.id || "N/A"}</Text>
                     <Text>Description: {farmDetail[0]?.description || "N/A"}</Text>
-                    <Text>Area: {farmDetail[0]?.area || "N/A"} acres</Text>
+                    <Text>Area: {farmDetail[0]?.area || "N/A"} Rai</Text>
                     <Text>Total Rice Harvest: {farmDetail[0]?.totalRiceHarvest || "N/A"} tons</Text>
                     <Text>
                         Created At:{" "}
@@ -533,6 +551,24 @@ export default function FarmDetail({ route }) {
                         </View>
                     </View>
                 </Modal>
+
+
+                <View style={styles.section}>
+                    <ShowCarbonFootprint data={emissionData} />
+                </View>
+                <View style={styles.GraphSection}>
+                    {/* <AvgWaterLevel data={emissionData} /> */}
+                    <MethaneGraph data={emissionData} />
+                </View>
+                <View style={styles.GraphSection}>
+                    <TotalWaterGraph data={emissionData} />
+                    <TempGraph data={emissionData} />
+                </View>
+                <View style={styles.GraphSection}>
+                    <LightGraph data={emissionData} />
+                    <HumidityGraph data={emissionData} />
+                </View>
+                {/* <Button title="Export emission data to CSV" onPress={exportToCSV} /> */}
 
 
                 {FarmField.length > 0 ? (
@@ -738,21 +774,7 @@ export default function FarmDetail({ route }) {
 
 
 
-                <View style={styles.section}>
-                    <ShowCarbonFootprint data={emissionData} />
-                </View>
-                <View style={styles.GraphSection}>
-                    {/* <AvgWaterLevel data={emissionData} /> */}
-                    <MethaneGraph data={emissionData} />
-                </View>
-                <View style={styles.GraphSection}>
-                    <TotalWaterGraph data={emissionData} />
-                    <TempGraph data={emissionData} />
-                </View>
-                <View style={styles.GraphSection}>
-                    <LightGraph data={emissionData} />
-                    <HumidityGraph data={emissionData} />
-                </View>
+
 
 
 
